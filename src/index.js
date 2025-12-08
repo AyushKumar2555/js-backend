@@ -1,7 +1,7 @@
 // Load environment variables from .env file
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
-
+import { app } from "./app.js";
 //  Must load .env before using process.env values
 dotenv.config({
     path: './env'
