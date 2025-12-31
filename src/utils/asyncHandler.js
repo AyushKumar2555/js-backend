@@ -18,13 +18,13 @@ export { asyncHandler };
 // const asyncHandler = (func) => async () => {} // async returned function
 
 // Full version:
-const asyncHandlerV2 = (fn) => async (req, res, next) => {
-    try {
-        await fn(req, res, next);
-    } catch (error) {
-        res.status(error.code || 500).json({
-            success: false,
-            message: error.message
-        });
-    }
-};
+// const asyncHandlerV2 = (fn) => async (req, res, next) => {
+//     try {
+//         await fn(req, res, next);
+//     } catch (error) {
+//         res.status(error.code || 500).json({
+//             success: false,
+//             message: error.message
+//         });
+//     }
+// };

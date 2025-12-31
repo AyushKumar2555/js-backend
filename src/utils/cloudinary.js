@@ -14,7 +14,7 @@ cloudinary.config({
 //   hasSecret: !!process.env.CLOUDINARY_API_SECRET
 // });
 
-const uploadOnCLoudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath) => {
 
     // 🌟 DEBUG 1 — Function call
     // console.log("DEBUG: Upload function called. Path:", localFilePath);
@@ -56,4 +56,4 @@ const uploadOnCLoudinary = async (localFilePath) => {
     }
 }
 
-export {uploadOnCLoudinary}
+export {uploadOnCloudinary}
