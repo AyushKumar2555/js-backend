@@ -6,7 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
-const generateAccessAndRefereshTokens = async (userId) => {
+const generateAccessAndRefreshTokens = async (userId) => {
   const user = await User.findById(userId);
 
   if (!user) {
@@ -18,11 +18,24 @@ const generateAccessAndRefereshTokens = async (userId) => {
 
   user.refreshToken = refreshToken;
   await user.save({ validateBeforeSave: false });
+   console.log("ENV CHECK =>", process.env.ACCESS_TOKEN_SECRET);
 
   return { accessToken, refreshToken };
 };
 
 const registerUser = asyncHandler(async (req, res) => {
+
+  //get user details from frontend 
+  //validation - not empty
+  //check if user already exists :username , email
+  //check for images , check for avatar 
+  //upload them them to cloudinary , avatar
+  //create user object - create entry in db 
+  //remove password and refersh token field from response 
+  //check for user creation 
+  //return response 
+
+
   const { fullName, email, username, password } = req.body;
   console.log("BODY:", req.body);
 
@@ -83,6 +96,14 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
+
+  //req body -> data 
+  //username or email
+  //find the user 
+  //password check 
+  //access and referesh token 
+  //send cookie 
+
   const { email, username, password } = req.body;
 
   if (!(email || username)) {
@@ -108,7 +129,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const { accessToken, refreshToken } =
-    await generateAccessAndRefereshTokens(user._id);
+    await generateAccessAndRefreshTokens(user._id);
 
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
@@ -134,9 +155,18 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-  await User.findByIdAndUpdate(req.user._id, {
-    $unset: { refreshToken: 1 },
-  });
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+
+      $unset: {
+        refreshToken: 1
+      }
+    },
+    {
+      new: true
+    }
+  );
 
   const options = {
     httpOnly: true,
@@ -171,11 +201,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   const { accessToken, refreshToken } =
-    await generateAccessAndRefereshTokens(user._id);
+    await generateAccessAndRefreshTokens(user._id);
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   };
   return res
