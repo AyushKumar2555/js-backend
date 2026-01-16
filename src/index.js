@@ -1,32 +1,29 @@
-// Load environment variables from .env file
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
-//  Must load .env before using process.env values
+
+// Load environment variables
 dotenv.config({
-    path: './env'
+    path: './.env'  // Fixed: added dot
 });
 
-//  connectDB() returns a Promise → so we use .then() & .catch()
 connectDB()
     .then(() => {
-        //  Start server ONLY after DB connection is successful
-        const server = app.listen(process.env.PORT || 8000, () => {
-            console.log(`Server is running at port : ${process.env.PORT}`);
+        const PORT = process.env.PORT || 8000;
+        const server = app.listen(PORT, () => {
+            console.log(`Server is running at port: ${PORT}`);
+            console.log(`Database: ${process.env.MONGODB_URL}/${process.env.DB_NAME}`);
         });
 
-        //  Catch server-level errors (port in use, permission denied, etc.)
         server.on("error", (error) => {
             console.log("Server Error:", error);
             throw error;
         });
-
     })
     .catch((err) => {
-        //  If DB connection fails, server will not start
-        console.log("MongoDB connection failed !!!", err);
+        console.log("MongoDB connection failed!", err);
+        process.exit(1);
     });
-
 
 
 /*

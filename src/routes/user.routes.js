@@ -13,8 +13,8 @@ import {
     getWatchHistory
 } from "../controllers/user.controller.js";
 
-import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middleware/multer.middleware.js";
+import { verifyJWT } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
@@ -23,7 +23,26 @@ const router = Router();
 | AUTH & USER CREATION ROUTES
 |--------------------------------------------------------------------------
 */
+import multer from "multer";
 
+// Test route
+router.route("/test-upload").post(
+    upload.single("avatar"),
+    (req, res) => {
+        console.log("File received:", req.file);
+        console.log("Body:", req.body);
+        
+        if (!req.file) {
+            return res.status(400).json({ error: "No file received" });
+        }
+        
+        res.json({
+            message: "File received successfully",
+            file: req.file,
+            body: req.body
+        });
+    }
+);
 /*
   Register a new user.
 

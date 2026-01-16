@@ -1,59 +1,84 @@
-import { v2 as cloudinary } from 'cloudinary'
-import fs from "fs"
-import { env } from 'process';
+import { v2 as cloudinary } from 'cloudinary';
+import fs from "fs";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
-// for debugging
-// console.log("DEBUG CLOUDINARY CONFIG:", {
-//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//   api_key: process.env.CLOUDINARY_API_KEY,
-//   hasSecret: !!process.env.CLOUDINARY_API_SECRET
-// });
+
+console.log("Cloudinary Config Check:");
+console.log("- Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("- API Key:", process.env.CLOUDINARY_API_KEY);
+console.log("- Has Secret:", !!process.env.CLOUDINARY_API_SECRET);
 
 const uploadOnCloudinary = async (localFilePath) => {
-
-    // 🌟 DEBUG 1 — Function call
-    // console.log("DEBUG: Upload function called. Path:", localFilePath);
-
+    console.log("Upload function called with path:", localFilePath);
+    
     try {
-        if(!localFilePath) {
-            console.log("DEBUG: localFilePath missing, returning null");
+        if (!localFilePath) {
+            console.log("No file path provided");
             return null;
         }
 
-        // 🌟 DEBUG 2 — Before uploading
-        // console.log("DEBUG: Starting Cloudinary upload...");
+        // Check if file exists
+        if (!fs.existsSync(localFilePath)) {
+            console.log("File does not exist:", localFilePath);
+            return null;
+        }
 
+        console.log("File exists, size:", fs.statSync(localFilePath).size, "bytes");
+        
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto"
         });
 
-        // 🌟 DEBUG 3 — Upload success
-        // console.log("DEBUG: Cloudinary upload success. URL:", response.url);
+        console.log("Upload successful:", response.url);
+        
+        // Delete local file
         fs.unlinkSync(localFilePath);
+        console.log("Local file deleted");
+        
         return response;
 
     } catch (error) {
-
-        // 🌟 DEBUG 4 — Upload failed
-  /*
-        console.log("DEBUG: Cloudinary upload failed!");
-        console.log("DEBUG Error Message:", error.message);
-        console.log("DEBUG Full Error Object:", error);
-*/
+        console.log("Cloudinary upload ERROR:", error.message);
+        
+        // Try to delete local file
         try {
-            fs.unlinkSync(localFilePath);
-            console.log("DEBUG: Local temp file deleted after error.");
+            if (fs.existsSync(localFilePath)) {
+                fs.unlinkSync(localFilePath);
+                console.log("Local file deleted after error");
+            }
         } catch (unlinkErr) {
-            console.log("DEBUG: Failed to delete local temp file.", unlinkErr.message);
+            console.log("Failed to delete local file:", unlinkErr.message);
         }
-
+        
         return null;
     }
-}
+};
 
-export {uploadOnCloudinary}
+const deleteFromCloudinary = async (publicId, resourceType = "image") => {
+    try {
+        if (!publicId) {
+            console.log("No public ID provided for deletion");
+            return null;
+        }
+
+        console.log(`Deleting from Cloudinary: ${publicId} (type: ${resourceType})`);
+        
+        const result = await cloudinary.uploader.destroy(publicId, {
+            resource_type: resourceType
+        });
+
+        console.log("Delete successful:", result);
+        return result;
+
+    } catch (error) {
+        console.log("Cloudinary delete ERROR:", error.message);
+        return null;
+    }
+};
+
+// Export BOTH functions
+export { uploadOnCloudinary, deleteFromCloudinary };
